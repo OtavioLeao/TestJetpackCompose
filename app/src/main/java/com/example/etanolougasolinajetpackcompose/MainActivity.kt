@@ -1,5 +1,6 @@
 package com.example.etanolougasolinajetpackcompose
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -11,41 +12,48 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.etanolougasolinajetpackcompose.ui.theme.EtanolOuGasolinaJetpackComposeTheme
 
 class MainActivity : ComponentActivity() {
 
+    var resultado = ""
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             EtanolOuGasolinaJetpackComposeTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
+                Scaffold(
+                    topBar = {
+                        Toolbar()
+                    }
+                ) {
                     Column {
-                        body()
+                        Body()
                     }
                 }
             }
         }
     }
-}
 
 
-@Composable
-fun body(){
-    var resultado = ""
+    @Composable
+    private fun Toolbar() {
+        TopAppBar(
+            title = { Text(text = stringResource(id = R.string.app_name)) },
+            backgroundColor = colorResource(id = R.color.purple_500)
+        )
+    }
 
-    Column(modifier = Modifier
-        .padding(30.dp)
-        .fillMaxWidth()
-        .wrapContentSize(Alignment.Center)
-    ) {
-        
+
+    @Composable
+    fun Body() {
+
         var valueEtanol by remember {
             mutableStateOf(value = "")
         }
@@ -53,78 +61,91 @@ fun body(){
             mutableStateOf(value = "")
         }
 
-        Text(text = "Etanol")
-        Spacer(modifier = Modifier.padding(8.dp))
-        OutlinedTextField(
-            value = valueEtanol,
-            onValueChange = {valueEtanol = it},
-            placeholder = { Text(text = "R$0,00")},
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    Log.e("Etanol", valueEtanol)
-                })
-        )
-        Spacer(modifier = Modifier.padding(12.dp))
-        Text(text = "Gasolina")
-        Spacer(modifier = Modifier.padding(8.dp))
-        OutlinedTextField(
-            value = valueGasolina,
-            onValueChange = {valueGasolina = it},
-            placeholder = { Text(text = "R$0,00")},
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    Log.e("Resultado", fazerCalculo(etanol = valueEtanol, gasolina = valueGasolina))
-                })
-        )
-        Spacer(modifier = Modifier.padding(12.dp))
-        Button(
-            onClick = {
-                resultado = fazerCalculo(valueEtanol, valueGasolina)
-                Log.e("Resultado", fazerCalculo(etanol = valueEtanol, gasolina = valueGasolina))
-                MostrarResultado(resultado = resultado)
-            },
-            contentPadding = PaddingValues(
-                start = 20.dp,
-                top = 12.dp,
-                end = 20.dp,
-                bottom = 12.dp
-            ),
-            
+
+        Column(
+            modifier = Modifier
+                .padding(30.dp)
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center)
         ) {
-            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-            Text("Calcular")
+            Text(text = "Etanol")
+            Spacer(modifier = Modifier.padding(8.dp))
+            OutlinedTextField(
+                value = valueEtanol,
+                onValueChange = {
+                    valueEtanol = it
+                },
+                placeholder = { Text(text = "R$0,00") },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        Log.e("Etanol", valueEtanol)
+                    })
+            )
+            Spacer(modifier = Modifier.padding(12.dp))
+            Text(text = "Gasolina")
+            Spacer(modifier = Modifier.padding(8.dp))
+            OutlinedTextField(
+                value = valueGasolina,
+                onValueChange = {
+                    valueGasolina = it
+                },
+                placeholder = { Text(text = "R$0,00") },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        // Log.e("Resultado", fazerCalculo(etanol = valueEtanol, gasolina = valueGasolina))
+                    })
+            )
+            Spacer(modifier = Modifier.padding(12.dp))
+            Button(
+                onClick = {
+                    resultado = fazerCalculo(valueEtanol, valueGasolina)
+                    ProximaTela(resultado)
+                },
+                contentPadding = PaddingValues(
+                    start = 20.dp,
+                    top = 12.dp,
+                    end = 20.dp,
+                    bottom = 12.dp
+                ),
+
+                ) {
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Text("Calcular")
+            }
         }
-        
-    }
-}
-
-private fun MostrarResultado(resultado : String) : String{
-   return resultado
-}
-
-
-
-
-
-private fun fazerCalculo(etanol:String?, gasolina:String?) : String{
-    val result = (etanol?.toDouble() ?: 0.0) / (gasolina?.toDouble() ?: 0.0)
-    return if (result <= 0.7) "Alcool" else "gasolina"
     }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    EtanolOuGasolinaJetpackComposeTheme {
-        Column {
-            body()
+    private fun fazerCalculo(etanol: String?, gasolina: String?): String {
+        val result = (etanol?.toDouble() ?: 0.0) / (gasolina?.toDouble() ?: 0.0)
+        return if (result <= 0.7) "Alcool" else "gasolina"
+    }
+
+    private fun ProximaTela(resultado:String){
+        val intent = Intent(this, TelaResultado::class.java)
+        intent.putExtra("result", resultado)
+        startActivity(intent)
+    }
+
+    //@Preview(showBackground = true)
+    @Composable
+    fun DefaultPreview() {
+
+        Scaffold(
+            topBar = { Toolbar() }
+
+        ) {
+
+            Column {
+                Body()
+            }
         }
     }
 }
